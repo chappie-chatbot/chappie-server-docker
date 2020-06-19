@@ -9,16 +9,24 @@ services:
     build: ../chappie-timeentry
     volumes:
       - "../chappie-timeentry/data:/chappie"
+    ports:
+      - "8089:8089"
+    restart: unless-stopped
+  chappie-db-adapter:
+    build: ../chappie-adapter-db
     restart: unless-stopped
   chappie:
     build: .
     environment:
-      RASA_HOST: http://chappie-bot:5005
+#      RASA_HOST: http://chappie-bot:5005
+      CHAPPIE_SERVER_ID: test
+      RASA_HOST: http://10.163.238.235:5005
       TIMEENTRY_HOST: http://chappie-timeentry:8089
+      DB_ADAPTER_HOST: http://chappie-db-adapter:8081
     ports:
       - "8080:8080"
-    volumes:
-      - "./data:/chappie"
+#    volumes:
+#      - "./data:/chappie"
     restart: unless-stopped
     depends_on:
       - chappie-bot
