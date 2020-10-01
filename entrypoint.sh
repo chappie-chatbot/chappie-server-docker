@@ -1,6 +1,11 @@
 #!/bin/bash
 
 cd /chappie
+
+git clone https://github.com/chappie-chatbot/chappie-common.git chappie-common
+git clone https://github.com/chappie-chatbot/chappie-webui.git chappie-webui
+git clone https://github.com/chappie-chatbot/chappie-server.git chappie-server
+
 cd chappie-common
 git checkout master
 git pull

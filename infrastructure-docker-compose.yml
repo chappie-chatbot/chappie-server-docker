@@ -1,0 +1,80 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:12
+    environment:
+      - "TZ=America/Denver"
+      - "VERSION=latest"
+      - "POSTGRES_PASSWORD=!My_PostgreSQL_Pass!"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./postgresql-init:/docker-entrypoint-initdb.d"
+      - "./postgresql-data:/var/lib/postgresql/data"
+    restart: unless-stopped
+  zookeeper:
+    image: zookeeper:latest
+    environment:
+      - "TZ=America/Denver"
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    restart: unless-stopped
+  kafka:
+    image: ches/kafka:latest
+    environment:
+      - "TZ=America/Denver"
+      - "KAFKA_BROKER_ID=1"
+      - "ZOOKEEPER_CHROOT=/kafka"
+      - "KAFKA_ADVERTISED_HOST_NAME=kafka"
+      - "ZOOKEEPER_CONNECTION_STRING=zookeeper:2181"
+    ports:
+      - "9092:9092"
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+  chappie-timeentry:
+    build: ../chappie-timeentry
+    volumes:
+      - "./chappie-timeentry-data:/chappie"
+    ports:
+      - "8089:8089"
+    restart: unless-stopped
+  chappie-bot:
+    build: ../chappie-bot
+    volumes:
+      - "../chappie-bot/rasa:/app"
+    environment:
+      TIMEENTRY_HOST: http://chappie-timeentry:8089
+    restart: unless-stopped
+    depends_on:
+      - chappie-timeentry
+  chappie-db-adapter:
+    build: ../chappie-adapter-db
+    restart: unless-stopped
+    volumes:
+      - "./chappie-db-adapter-data:/chappie"
+    environment:
+      DATASOURCE: jdbc:postgresql://postgres:5432/chappie
+      KAFKA_HOSTS: kafka:9092
+  chappie:
+    build: .
+    environment:
+#      RASA_HOST: http://chappie-bot:5005
+      CHAPPIE_SERVER_ID: test
+      RASA_HOST: http://10.163.238.235:5005
+      TIMEENTRY_HOST: http://chappie-timeentry:8089
+      DB_ADAPTER_HOST: http://chappie-db-adapter:8081
+      DATASOURCE: jdbc:postgresql://postgres:5432/chappie
+      KAFKA_HOSTS: kafka:9092
+    volumes:
+      - "./chappie-server-data:/chappie"
+    ports:
+      - "8080:8080"
+#    volumes:
+#      - "./data:/chappie"
+    restart: unless-stopped
+    depends_on:
+      - chappie-bot
+      - chappie-timeentry
