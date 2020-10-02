@@ -1,9 +1,9 @@
 version: '3'
 services:
   chappie-bot:
-    build: ../chappie-bot
-    volumes:
-      - "../chappie-bot/rasa:/app"
+    build: ../chappie-bot-keras
+    environment:
+      - "PORT=8082"
     restart: unless-stopped
   chappie-timeentry:
     build: ../chappie-timeentry
@@ -21,6 +21,7 @@ services:
 #      RASA_HOST: http://chappie-bot:5005
       CHAPPIE_SERVER_ID: test
       RASA_HOST: http://10.163.238.235:5005
+      BOT_HOST: http://chappie-bot:8082
       TIMEENTRY_HOST: http://chappie-timeentry:8089
       DB_ADAPTER_HOST: http://chappie-db-adapter:8081
     ports:

@@ -41,6 +41,11 @@ services:
     ports:
       - "8089:8089"
     restart: unless-stopped
+  chappie-bot-keras:
+    build: ../chappie-bot-keras
+    environment:
+      - "PORT=8082"
+    restart: unless-stopped
   chappie-bot:
     build: ../chappie-bot
     volumes:
@@ -64,6 +69,7 @@ services:
 #      RASA_HOST: http://chappie-bot:5005
       CHAPPIE_SERVER_ID: test
       RASA_HOST: http://10.163.238.235:5005
+      BOT_HOST: http://chappie-bot:8082
       TIMEENTRY_HOST: http://chappie-timeentry:8089
       DB_ADAPTER_HOST: http://chappie-db-adapter:8081
       DATASOURCE: jdbc:postgresql://postgres:5432/chappie
